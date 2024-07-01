@@ -4,20 +4,17 @@ import pandas as pd
 import pymssql
 
 
-def connectToSQL(server='LZZZYTXDY-COMPU', user='sa', password='123456', database='familyPolicy'):
+def connectToSQL(server='rm-7xv35lw897512wv46mo.sqlserver.rds.aliyuncs.com', port=3433, user='familyPolicyUser',
+                 password='ZZYxll040410', database='familyPolicy'):
     """
-    连接sql，返回游标对象cursor和connect
+    连接数据库，返回游标对象cursor和connect
     :param server: 服务器名称
     :param user: 用户
     :param password: 密码
     :param database: 数据库名称
     :return: 游标对象cursor和connect
     """
-    server = server
-    user = user
-    password = password
-    database = database
-    connect = pymssql.connect(server=server, user=user, password=password, database=database, charset='utf8')
+    connect = pymssql.connect(server=server, port=port, user=user, password=password, database=database, charset='utf8')
     cursor = connect.cursor()  # 创建一个游标对象cursor，用于执行SQL查询和获取结果
     return cursor, connect
 
@@ -245,6 +242,26 @@ def deleteWarranty(warrantyNum: str) -> bool:
         return False
 
 
+def updateWarranty(warrantyNum0, name, company, productName, effect, premium,
+                   paymentState, nextPayday, period, state, ):
+    cursor, connect = connectToSQL()
+    sql = f"""update warranty
+        set effective_date='{effect}',premium={premium},payment_state={paymentState},
+        next_pay_day={nextPayday},period={period},state='{state}',name='{name}',product_name='{productName}',company='{company}'
+        where warranty_number={warrantyNum0}
+    """
+    try:
+        cursor.execute(sql)
+        connect.commit()
+        return 1
+    except Exception as e:
+        print(e)
+        return 0
+    finally:
+        cursor.close()
+        connect.close()
+
+
 def dropWarranty(warrantyNum: str) -> bool:
     """
     彻底删除保单（同时删除payment表里的有关信息）（注意：与deleteWarranty进行比较，此函数为彻底删除）
@@ -263,6 +280,42 @@ def dropWarranty(warrantyNum: str) -> bool:
     except Exception as e:
         print(e)
         return False
+
+
+def updatePayment(warrantyNum0, warrantyNum1):
+    cursor, connect = connectToSQL()
+    sql = f"""update payment
+            set warranty_number = {warrantyNum1}
+            where warranty_number = {warrantyNum0};
+    """
+    try:
+        cursor.execute(sql)
+        connect.commit()
+        return 1
+    except Exception as e:
+        print(e)
+        return 0
+    finally:
+        cursor.close()
+        connect.close()
+
+
+def updatePDF(warrantyNum0, warrantyNum1):
+    cursor, connect = connectToSQL()
+    sql = f"""update pdf_
+            set warranty_number = {warrantyNum1}
+            where warranty_number = {warrantyNum0};
+    """
+    try:
+        cursor.execute(sql)
+        connect.commit()
+        return 1
+    except Exception as e:
+        print(e)
+        return 0
+    finally:
+        cursor.close()
+        connect.close()
 
 
 def isActive(warrantyNum: str) -> bool:
@@ -363,7 +416,6 @@ def isPaid(warrantyNum: str) -> bool:
 def get_one_warranty(warrantyNum: str):
     """
     输入姓名和保单id，返回这一张保单的信息(任务书图二)
-    :param name: 姓名
     :param warrantyNum: 保单号
     :return: DataFrame类型的信息(任务书图二)
     """
@@ -932,8 +984,7 @@ def payWarranty(warrantyNum: str, date, tailNum) -> int:
         print('保单已失效或已删除')
         return 0
 
-# if __name__ == '__main__':
-#     print(get_local_ip())
-#     connectToSQL()
-#     print(socket.gethostname())
-#     print('ok')
+
+if __name__ == '__main__':
+    connectToSQL()
+    print('ok')

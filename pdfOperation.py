@@ -1,8 +1,10 @@
 import os
+
 from reportlab.lib import colors
 from reportlab.lib.pagesizes import letter
 from reportlab.lib.styles import getSampleStyleSheet, ParagraphStyle
 from reportlab.platypus import SimpleDocTemplate, Table, TableStyle, Paragraph
+
 import CRUD
 
 
@@ -262,5 +264,3 @@ def read_one_pdf_from_SQLServer(warrantyNum) -> bool:
         cursor.close()
         connect.close()
         return False
-
-

@@ -1,9 +1,9 @@
 from datetime import datetime
+
 import streamlit as st
 
 import CRUD
 import pdfOperation as pdf
-
 
 # 页面标题
 st.title("家庭保单小管家")
@@ -14,7 +14,7 @@ function = st.sidebar.selectbox(
     (
         "添加家庭成员", "添加保险", "为家人新增保单",
         "输出保单PDF文档", "保存PDF文档", "读取PDF文档",
-        "查询保单", "修改保单信息", "一键修改所有保单", "删除保单信息",
+        "查询保单", "修改保单", "修改保单支付状态", "一键修改所有保单支付状态", "删除保单信息",
         "缴费", "查询缴费记录",
         "提醒缴费", "统计"
     )
@@ -168,22 +168,64 @@ elif function == "查询保单":
             else:
                 st.dataframe(warranty)
 
-elif function == "修改保单信息":
-    st.subheader("修改保单信息")
+elif function == "修改保单":
+    st.subheader("修改保单")
+    warrantyNum0 = st.text_input("保单号")
+    name = st.text_input("姓名")
+    company = st.text_input("保险公司")
+    product_name = st.text_input("产品名称")
+    effective_date = st.date_input("生效日期")
+    premium = st.number_input("保费", min_value=0.0)
+    payment_state = st.selectbox("支付状态", ["已支付", "未支付"])
+    next_pay_day = st.date_input("下次交费日期")
+    period = st.number_input("交费周期（月）", min_value=0)
+    state = st.selectbox("状态", ["已生效", "未生效"])
+
+    if payment_state == "已支付":
+        payment_state = 1
+    else:
+        payment_state = 0
+
+    if state == "已生效":
+        state = "Active"
+    else:
+        state = "Ineffective"
+
+    if period == 0:
+        period = 'NULL'
+        next_pay_day = 'NULL'
+    else:
+        next_pay_day = f'\'{next_pay_day}\''
+
+    if st.button("修改保单"):
+        if (not name or not company or not product_name or not warrantyNum0
+                or not effective_date or not premium):
+            st.error('请输入完整信息')
+        else:
+            if (CRUD.updateWarranty(warrantyNum0, name, company, product_name,
+                                    str(effective_date), premium,
+                                    payment_state,
+                                    str(next_pay_day), period, state)):
+                st.success("修改成功")
+            else:
+                st.error("修改失败")
+
+elif function == "修改保单支付状态":
+    st.subheader("修改保单支付状态")
     warrantyNum = st.text_input("保单号")
-    if st.button("修改保单信息"):
+    if st.button("修改保单支付状态"):
         CRUD.update_WARRANTY_state(warrantyNum)
         st.success("修改成功")
 
 
-elif function == "一键修改所有保单":
-    st.subheader("一键修改所有保单")
+elif function == "一键修改所有保单支付状态":
+    st.subheader("一键修改所有保单支付状态")
     warrantyNum = CRUD.getWarrantyNum()
 
     if st.button("修改"):
         for warranty in warrantyNum:
             CRUD.update_WARRANTY_state(warranty)
-        st.success("所有保单信息修改成功")
+        st.success("所有保单支付状态修改成功")
 
 
 elif function == "删除保单信息":

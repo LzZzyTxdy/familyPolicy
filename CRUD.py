@@ -4,8 +4,8 @@ import pandas as pd
 import pymssql
 
 
-def connectToSQL(server='rm-7xv35lw897512wv46mo.sqlserver.rds.aliyuncs.com', port=3433, user='familyPolicyUser',
-                 password='ZZYxll040410', database='familyPolicy'):
+def connectToSQL(server='Your Server', port='Port Number', user='Your User',
+                 password='Your Password', database='Name Of Database'):
     """
     连接数据库，返回游标对象cursor和connect
     :param server: 服务器名称
